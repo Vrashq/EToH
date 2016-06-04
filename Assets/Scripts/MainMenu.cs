@@ -7,13 +7,15 @@ public enum EDifficulty
 {
 	Easy = 0,
 	Medium = 1,
-	Hard = 2
+	Hard = 2,
+	QuitGame = 3
 }
 
 public class MainMenu : MonoBehaviour
 {
 	private EDifficulty _currentDifficulty = EDifficulty.Easy;
 	private Animator _animator;
+	private bool _bCanTouch = false;
 
 	public Player player;
 	public RectTransform difficultesTransform;
@@ -29,15 +31,13 @@ public class MainMenu : MonoBehaviour
 
 		_animator = GetComponent<Animator>();
 
-		RectTransform medium = difficultesTransform.GetChild(1).GetComponent<RectTransform>();
-		RectTransform hard = difficultesTransform.GetChild(2).GetComponent<RectTransform>();
-
-		medium.anchoredPosition = new Vector2(Screen.width, -15.0f);
-		hard.anchoredPosition = new Vector2(Screen.width * 2.0f, -15.0f);
+		difficultesTransform.GetChild(1).GetComponent<RectTransform>().anchoredPosition = new Vector2(Screen.width, -15.0f);
+		difficultesTransform.GetChild(2).GetComponent<RectTransform>().anchoredPosition = new Vector2(Screen.width * 2.0f, -15.0f);
+		difficultesTransform.GetChild(3).GetComponent<RectTransform>().anchoredPosition = new Vector2(Screen.width * 3.0f, -15.0f);
 	}
 
 	public void OnLoadStart(float progress)
-	{
+	{	
 		gameObject.SetActive(true);
 	}
 
@@ -55,58 +55,72 @@ public class MainMenu : MonoBehaviour
 	public void EndIntroAnimation ()
 	{
 		SwipeController.Instance.bCanSwipe = true;
+		_bCanTouch = true;
 	}
 
 	public void OnSwipe(ESwipeDirection direction, float amount)
 	{
-		if (direction == ESwipeDirection.Left)
+		if(_bCanTouch)
 		{
-			if(_currentDifficulty != EDifficulty.Hard)
+			if (direction == ESwipeDirection.Left)
 			{
-				StartCoroutine(Swipe(-Screen.width));
+				if (_currentDifficulty != EDifficulty.QuitGame)
+				{
+					StartCoroutine(Swipe(-Screen.width));
+				}
+				else
+				{
+					StartCoroutine(BadSwipeLeft());
+				}
 			}
-			else
-			{
-				StartCoroutine(BadSwipeLeft());
-			}
-		}
 
-		if (direction == ESwipeDirection.Right)
-		{
-			if(_currentDifficulty != EDifficulty.Easy)
+			if (direction == ESwipeDirection.Right)
 			{
-				StartCoroutine(Swipe(Screen.width));
+				if (_currentDifficulty != EDifficulty.Easy)
+				{
+					StartCoroutine(Swipe(Screen.width));
+				}
+				else
+				{
+					StartCoroutine(BadSwipeRight());
+				}
 			}
-			else
-			{
-				StartCoroutine(BadSwipeRight());
-			}
-		}
 
-		switch (_currentDifficulty)
-		{
-			case EDifficulty.Easy:
-				if (direction == ESwipeDirection.Left)
-				{
-					_currentDifficulty = EDifficulty.Medium;
-				}
-				break;
-			case EDifficulty.Medium:
-				if (direction == ESwipeDirection.Left)
-				{
-					_currentDifficulty = EDifficulty.Hard;
-				}
-				else if (direction == ESwipeDirection.Right)
-				{
-					_currentDifficulty = EDifficulty.Easy;
-				}
-				break;
-			case EDifficulty.Hard:
-				if (direction == ESwipeDirection.Right)
-				{
-					_currentDifficulty = EDifficulty.Medium;
-				}
-				break;
+			switch (_currentDifficulty)
+			{
+				case EDifficulty.Easy:
+					if (direction == ESwipeDirection.Left)
+					{
+						_currentDifficulty = EDifficulty.Medium;
+					}
+					break;
+				case EDifficulty.Medium:
+					if (direction == ESwipeDirection.Left)
+					{
+						_currentDifficulty = EDifficulty.Hard;
+					}
+					else if (direction == ESwipeDirection.Right)
+					{
+						_currentDifficulty = EDifficulty.Easy;
+					}
+					break;
+				case EDifficulty.Hard:
+					if(direction == ESwipeDirection.Left)
+					{
+						_currentDifficulty = EDifficulty.QuitGame;
+					}
+					else if (direction == ESwipeDirection.Right)
+					{
+						_currentDifficulty = EDifficulty.Medium;
+					}
+					break;
+				case EDifficulty.QuitGame:
+					if(direction == ESwipeDirection.Right)
+					{
+						_currentDifficulty = EDifficulty.Hard;
+					}
+					break;
+			}
 		}
 	}
 
@@ -186,8 +200,8 @@ public class MainMenu : MonoBehaviour
 	public void StartGame (int mode) {
 		_currentDifficulty = (EDifficulty)mode;
 		player.StartGame(_currentDifficulty);
-		transform.root.gameObject.SetActive(false);
-		SwipeController.Instance.bCanSwipe = false;
+		gameObject.SetActive(false);
+		_bCanTouch = false;
 	}
 
 	public void EndGame (float distanceTraveled) {
@@ -196,14 +210,24 @@ public class MainMenu : MonoBehaviour
 			SetScore(scoreLabels[(int)_currentDifficulty], distanceTraveled);
 			SaveLoad.Save(_currentDifficulty, distanceTraveled);
 		}
-		transform.root.gameObject.SetActive(true);
-		difficultesTransform.anchoredPosition = new Vector2(0, 0);
+		gameObject.SetActive(true);
 		SwipeController.Instance.bCanSwipe = true;
-		_currentDifficulty = EDifficulty.Easy;
+		switch(_currentDifficulty)
+		{
+			case EDifficulty.Easy:		difficultesTransform.anchoredPosition = new Vector2(0, 0); break;
+			case EDifficulty.Medium:	difficultesTransform.anchoredPosition = new Vector2(-Screen.width, 0); break;
+			case EDifficulty.Hard:		difficultesTransform.anchoredPosition = new Vector2(-Screen.width * 2.0f, 0); break;
+		}
+		_bCanTouch = true;
 	}
 
 	void SetScore (Text text, float score)
 	{
 		text.text = "Best: " + ((int)(score * 10f)).ToString();
+	}
+
+	public void QuitGame ()
+	{
+		Application.Quit();
 	}
 }

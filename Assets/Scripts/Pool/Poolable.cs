@@ -5,7 +5,6 @@ public class Poolable : MonoBehaviour
 {
 	private bool _canBePooled = true;
 
-	[HideInInspector]
 	public string PoolName;
 
 	public void SetReturnToPool(bool value)

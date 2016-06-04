@@ -24,6 +24,12 @@ public class CustomEditorGameObjectPool : Editor
 	{
 		GameObjectPool myTarget = (GameObjectPool)target;
 		List<Pool> poolsToRemove = new List<Pool>();
+		Rect r = EditorGUILayout.BeginVertical();
+		{
+			EditorGUI.ProgressBar(r, myTarget.Progress, "Loading in progress");
+			GUILayout.Space(16);
+		}
+		EditorGUILayout.EndVertical();
 
 		EditorGUILayout.BeginVertical("box");
 		{

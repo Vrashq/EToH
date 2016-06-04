@@ -1,13 +1,15 @@
 ﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 
 public class Player : MonoBehaviour {
 
-	public PipeSystem PipeSystem;
+	public PipeSystem MyPipeSystem;
 	public float StartVelocity;
 	public float RotationVelocity;
 	public MainMenu MainMenu;
 	public HUD Hud;
+	public PauseMenu PauseMenu;
 	public float[] Accelerations;
 	public Avatar Avatar;
 
@@ -19,66 +21,112 @@ public class Player : MonoBehaviour {
 	private float _worldRotation, _avatarRotation;
 	private Transform _world, _rotater;
 	private bool _bIsGameStarted = false;
+	private bool _bIsGamePaused = false;
+	private bool _bIsOnMenu = true;
+	private float _ballRotation = 0;
+	[SerializeField] private float _bonusVelocity = 0;
+	private EDifficulty _difficulty;
+
+	private void Awake()
+	{
+		_world = MyPipeSystem.transform.parent;
+		_rotater = transform.GetChild(0);
+		gameObject.SetActive(false);
+	}
+
+	public void Init()
+	{
+		MyPipeSystem.Start();
+		Hud.gameObject.SetActive(false);
+		gameObject.SetActive(true);
+		_currentPipe = MyPipeSystem.SetupFirstPipe();
+		_velocity = StartVelocity;
+		SetupCurrentPipe();
+	}
+
+	public void OnResume ()
+	{
+		_bIsGamePaused = false;
+		_bIsGameStarted = true;
+	}
+
+	public void AddBonus ()
+	{
+		_bonusVelocity += Random.Range(1.0f, 3.0f);
+		
+		switch(_difficulty)
+		{
+			case EDifficulty.Easy: _distanceTraveled += _bonusVelocity * 25.0f; break;
+			case EDifficulty.Medium: _distanceTraveled += _bonusVelocity * 50.0f; break;
+			case EDifficulty.Hard: _distanceTraveled += _bonusVelocity * 100.0f; break;
+		}
+		StartCoroutine(DecreaseBonus());
+	}
+
+	IEnumerator DecreaseBonus ()
+	{
+		yield return new WaitForSeconds(0.25f);
+		while(_bonusVelocity > 0)
+		{
+			_bonusVelocity -= Time.deltaTime * 0.5f;
+			if (_bonusVelocity < 0)
+				_bonusVelocity = 0;
+			yield return null;
+		}
+	}
 
 	public void StartGame (EDifficulty accelerationMode)
 	{
+		Avatar.SetRandomColor();
+		_difficulty = accelerationMode;
+		_acceleration = Accelerations[(int)accelerationMode];
 		Hud.gameObject.SetActive(true);
 		_distanceTraveled = 0f;
 		_avatarRotation = 0f;
 		_systemRotation = 0f;
 		_worldRotation = 0f;
-		_acceleration = Accelerations[(int)accelerationMode];
-		_currentPipe = PipeSystem.SetupFirstPipe();
+		_currentPipe = MyPipeSystem.SetupFirstPipe();
 		_velocity = StartVelocity;
 		SetupCurrentPipe();
 		Hud.SetValues(_distanceTraveled, _velocity);
 		Avatar.Mesh.localScale = Vector3.one * 0.1f;
 		_bIsGameStarted = true;
+		_bIsGamePaused = false;
+		_bIsOnMenu = false;
 	}
 
-	public void Die () {
-		MainMenu.EndGame(_distanceTraveled);
+	public void Die (bool sendScore = true) {
+		MainMenu.EndGame(sendScore ? _distanceTraveled : 0);
 		Hud.gameObject.SetActive(false);
 		gameObject.SetActive(true);
-		_currentPipe = PipeSystem.SetupFirstPipe();
+		_currentPipe = MyPipeSystem.SetupFirstPipe();
 		_velocity = StartVelocity;
 		SetupCurrentPipe();
 		_bIsGameStarted = false;
-	}
-
-	public void Init ()
-	{
-		Hud.gameObject.SetActive(false);
-		gameObject.SetActive(true);
-		_currentPipe = PipeSystem.SetupFirstPipe();
-		_velocity = StartVelocity;
-		SetupCurrentPipe();
-	}
-
-	private void Awake () {
-		_world = PipeSystem.transform.parent;
-		_rotater = transform.GetChild(0);
-		gameObject.SetActive(false);
+		_bIsGamePaused = false;
+		_bIsOnMenu = true;
 	}
 
 	private void Update ()
 	{
-		_velocity += _acceleration * Time.deltaTime;
-		float delta = _velocity * Time.deltaTime;
-		_distanceTraveled += delta;
-		_systemRotation += delta * _deltaToRotation;
-
-		if (_systemRotation >= _currentPipe.CurveAngle)
+		if((!_bIsGamePaused && _bIsGameStarted) || (_bIsGameStarted && !_bIsGamePaused) || _bIsOnMenu)
 		{
-			delta = (_systemRotation - _currentPipe.CurveAngle) / _deltaToRotation;
-			_currentPipe = PipeSystem.SetupNextPipe(_bIsGameStarted);
-			SetupCurrentPipe();
-			_systemRotation = delta * _deltaToRotation;
-		}
+			_velocity += _acceleration * Time.deltaTime;
+			float delta = (_velocity + _bonusVelocity) * Time.deltaTime;
+			_distanceTraveled += delta;
+			_systemRotation += delta * _deltaToRotation;
 
-		PipeSystem.transform.localRotation = Quaternion.Euler(0f, 0f, _systemRotation);
-		UpdateAvatarRotation();
-		Hud.SetValues(_distanceTraveled, _velocity);
+			if (_systemRotation >= _currentPipe.CurveAngle)
+			{
+				delta = (_systemRotation - _currentPipe.CurveAngle) / _deltaToRotation;
+				_currentPipe = MyPipeSystem.SetupNextPipe(_bIsGameStarted);
+				SetupCurrentPipe();
+				_systemRotation = delta * _deltaToRotation;
+			}
+			MyPipeSystem.transform.localRotation = Quaternion.Euler(0f, 0f, _systemRotation);
+			UpdateAvatarRotation();
+			Hud.SetValues(_distanceTraveled, _velocity);
+		}
 	}
 
 	private void UpdateAvatarRotation ()
@@ -122,6 +170,9 @@ public class Player : MonoBehaviour {
 			_avatarRotation -= 360f;
 		}
 		_rotater.localRotation = Quaternion.Euler(_avatarRotation, 0f, 0f);
+
+		_ballRotation = (_ballRotation + _velocity) % 360.0f;
+		Avatar.Mesh.localRotation = Quaternion.Euler(rotationInput * 5.0f, 0, -_ballRotation);
 	}
 
 	private void SetupCurrentPipe () {
@@ -134,5 +185,15 @@ public class Player : MonoBehaviour {
 			_worldRotation -= 360f;
 		}
 		_world.localRotation = Quaternion.Euler(_worldRotation, 0f, 0f);
+	}
+
+	public void OnSwipe (ESwipeDirection direction, float amount)
+	{
+		if(direction == ESwipeDirection.Down && _bIsGameStarted)
+		{
+			PauseMenu.gameObject.SetActive(true);
+			_bIsGameStarted = false;
+			_bIsGamePaused = true;
+		}
 	}
 }

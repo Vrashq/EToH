@@ -9,4 +9,12 @@ public class HUD : MonoBehaviour {
 		distanceLabel.text = ((int)(distanceTraveled * 10f)).ToString();
 		velocityLabel.text = ((int)(velocity * 10f)).ToString();
 	}
+
+	public void OnSwipe (ESwipeDirection direction, float amount)
+	{
+		if(direction == ESwipeDirection.Down)
+		{
+			Debug.Log("okay");
+		}
+	}
 }

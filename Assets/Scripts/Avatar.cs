@@ -3,33 +3,58 @@ using System.Collections;
 
 public class Avatar : MonoBehaviour {
 
-	public ParticleSystem trail, Burst;
+	public ParticleSystem Trail, Burst;
 	public float DeathCountdown = -1f;
 	public Transform Mesh, Camera;
 	public Player Player;
+	public Light Light;
 
-	void OnTriggerEnter (Collider collider) {
-		if (DeathCountdown < 0f) {
-			ParticleSystem.EmissionModule emissionModule = trail.emission;
-			emissionModule.enabled = false;
+	public void SetRandomColor ()
+	{
+		Color color = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
 
-			Burst.Emit(Burst.maxParticles);
-			DeathCountdown = Burst.startLifetime;
-			StartCoroutine(Shake(DeathCountdown));
-		}
+		Material material = Mesh.GetComponent<MeshRenderer>().material;
+		material.color = color;
+		material.SetColor("_EmissionColor", color);
+		Trail.startColor = color * 1.5f;
+
+		Light.color = color;
 	}
-	
-	void Update () {
-		if (DeathCountdown >= 0f) {
+
+	void Update()
+	{
+		if (DeathCountdown >= 0f)
+		{
 			DeathCountdown -= Time.deltaTime;
-			if (DeathCountdown <= 0f) {
-				ParticleSystem.EmissionModule emissionModule = trail.emission;
+			if (DeathCountdown <= 0f)
+			{
+				ParticleSystem.EmissionModule emissionModule = Trail.emission;
 				emissionModule.enabled = true;
 
 				DeathCountdown = -1f;
 				Player.Die();
 			}
 			Mesh.localScale = Vector3.one * 0.1f * DeathCountdown;
+		}
+	}
+
+	void OnTriggerEnter (Collider collider) {
+		if(collider.transform.tag == "Obstacle")
+		{
+			if (DeathCountdown < 0f)
+			{
+				ParticleSystem.EmissionModule emissionModule = Trail.emission;
+				emissionModule.enabled = false;
+
+				Burst.Emit(Burst.maxParticles);
+				DeathCountdown = Burst.startLifetime;
+				StartCoroutine(Shake(DeathCountdown));
+			}
+		}
+		else if (collider.transform.tag == "Bonus")
+		{
+			GameObjectPool.AddObjectIntoPool(collider.transform.parent.parent.gameObject);
+			Player.AddBonus();
 		}
 	}
 

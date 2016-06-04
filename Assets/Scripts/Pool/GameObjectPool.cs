@@ -92,10 +92,11 @@ public class GameObjectPool : MonoBehaviour
 
 	public static void AddObjectIntoPool (GameObject go)
 	{
+		string poolName = go.GetComponent<Poolable>().PoolName;
 		for (var i = 0; i < Instance.Pools.Count; ++i)
 		{
 			Pool pool = Instance.Pools[i];
-			if (pool.Name.CompareTo(go.GetComponent<Poolable>().PoolName) == 0 && pool.Reserve.Count > 0)
+			if (pool.Name.CompareTo(poolName) == 0)
 			{
 				pool.Reserve.Add(go);
 				go.transform.parent = pool.Root.transform;
@@ -126,21 +127,15 @@ public class GameObjectPool : MonoBehaviour
 	***********/
 	private bool _initialized;
 
-	[HideInInspector]
 	public List<Pool> Pools = new List<Pool>();
-	[HideInInspector]
 	public int NumberOfInstancesPerFrame = 1000;
 	public bool InitOnLoad = false;
 
-	[Header("Events")]
 	public LoadEvent LoadStart;
 	public LoadEvent LoadProgress;
 	public LoadEvent LoadEnd;
-	[HideInInspector]
 	public float ElementsLoaded;
-	[HideInInspector]
 	public float ElementsToLoad;
-	[HideInInspector]
 	public float Progress
 	{
 		get
