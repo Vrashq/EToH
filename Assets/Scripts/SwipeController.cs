@@ -86,8 +86,6 @@ public class SwipeController : MonoBehaviour
 			}
 			if (Input.GetMouseButtonUp(0))
 			{
-				bool bRightClick = Input.GetMouseButtonDown(1);
-
 				//save ended touch 2d point
 				lastPressPos0 = new Vector2(Input.mousePosition.x, Input.mousePosition.y);
 

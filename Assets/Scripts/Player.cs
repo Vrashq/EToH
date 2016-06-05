@@ -54,26 +54,11 @@ public class Player : MonoBehaviour {
 
 	public void AddBonus ()
 	{
-		_bonusVelocity += Random.Range(0.5f, 2.0f);
-		
 		switch(_difficulty)
 		{
 			case EDifficulty.Easy: _distanceTraveled += 25.0f; break;
 			case EDifficulty.Medium: _distanceTraveled += 50.0f; break;
 			case EDifficulty.Hard: _distanceTraveled += 100.0f; break;
-		}
-		StartCoroutine(DecreaseBonus());
-	}
-
-	IEnumerator DecreaseBonus ()
-	{
-		yield return new WaitForSeconds(0.25f);
-		while(_bonusVelocity > 0)
-		{
-			_bonusVelocity -= Time.deltaTime * 0.5f;
-			if (_bonusVelocity < 0)
-				_bonusVelocity = 0;
-			yield return null;
 		}
 	}
 
