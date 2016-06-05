@@ -2,5 +2,5 @@
 
 public abstract class PipeItemGenerator : MonoBehaviour {
 
-	public abstract void GenerateItems (Pipe pipe);
+	public abstract void GenerateItems (Pipe pipe, Color color);
 }

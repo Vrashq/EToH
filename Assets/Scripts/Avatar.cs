@@ -18,7 +18,8 @@ public class Avatar : MonoBehaviour {
 		material.SetColor("_EmissionColor", color);
 		Trail.startColor = color * 1.5f;
 
-		Light.color = color;
+		Player.SetColor(color);
+		// Light.color = color;
 	}
 
 	void Update()

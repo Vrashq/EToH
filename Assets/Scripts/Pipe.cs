@@ -18,6 +18,7 @@ public class Pipe : MonoBehaviour
 	private int[] _triangles;
 	private float _curveAngle;
 	private float _relativeRotation;
+	private Color _currentColor;
 
 	public float CurveAngle {
 		get {
@@ -63,7 +64,7 @@ public class Pipe : MonoBehaviour
 			GameObjectPool.AddObjectIntoPool(transform.GetChild(0).gameObject);
 		}
 		if (withItems) {
-			Generators[Random.Range(0, Generators.Length)].GenerateItems(this);
+			Generators[Random.Range(0, Generators.Length)].GenerateItems(this, _currentColor);
 		}
 	}
 
@@ -154,5 +155,11 @@ public class Pipe : MonoBehaviour
 		transform.Translate(0f, -_curveRadius, 0f);
 		transform.SetParent(pipe.transform.parent);
 		transform.localScale = Vector3.one;
+	}
+
+	public void SetColor (Color color)
+	{
+		_currentColor = color;
+		GetComponent<MeshRenderer>().material.SetColor("_Color", color);
 	}
 }

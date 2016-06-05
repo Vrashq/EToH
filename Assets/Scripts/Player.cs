@@ -12,9 +12,10 @@ public class Player : MonoBehaviour {
 	public PauseMenu PauseMenu;
 	public float[] Accelerations;
 	public Avatar Avatar;
+	public float MaxAngleRotation;
 
 	private Pipe _currentPipe;
-	[SerializeField] private float _acceleration, _velocity;
+	private float _acceleration, _velocity;
 	private float _distanceTraveled;
 	private float _deltaToRotation;
 	private float _systemRotation;
@@ -24,8 +25,9 @@ public class Player : MonoBehaviour {
 	private bool _bIsGamePaused = false;
 	private bool _bIsOnMenu = true;
 	private float _ballRotation = 0;
-	[SerializeField] private float _bonusVelocity = 0;
+	private float _bonusVelocity = 0;
 	private EDifficulty _difficulty;
+
 
 	private void Awake()
 	{
@@ -52,13 +54,13 @@ public class Player : MonoBehaviour {
 
 	public void AddBonus ()
 	{
-		_bonusVelocity += Random.Range(1.0f, 3.0f);
+		_bonusVelocity += Random.Range(0.5f, 2.0f);
 		
 		switch(_difficulty)
 		{
-			case EDifficulty.Easy: _distanceTraveled += _bonusVelocity * 25.0f; break;
-			case EDifficulty.Medium: _distanceTraveled += _bonusVelocity * 50.0f; break;
-			case EDifficulty.Hard: _distanceTraveled += _bonusVelocity * 100.0f; break;
+			case EDifficulty.Easy: _distanceTraveled += 25.0f; break;
+			case EDifficulty.Medium: _distanceTraveled += 50.0f; break;
+			case EDifficulty.Hard: _distanceTraveled += 100.0f; break;
 		}
 		StartCoroutine(DecreaseBonus());
 	}
@@ -172,7 +174,7 @@ public class Player : MonoBehaviour {
 		_rotater.localRotation = Quaternion.Euler(_avatarRotation, 0f, 0f);
 
 		_ballRotation = (_ballRotation + _velocity) % 360.0f;
-		Avatar.Mesh.localRotation = Quaternion.Euler(rotationInput * 5.0f, 0, -_ballRotation);
+		Avatar.Mesh.localRotation = Quaternion.Euler(_ballRotation, 90.0f + rotationInput * MaxAngleRotation, 90.0f);
 	}
 
 	private void SetupCurrentPipe () {
@@ -195,5 +197,10 @@ public class Player : MonoBehaviour {
 			_bIsGameStarted = false;
 			_bIsGamePaused = true;
 		}
+	}
+
+	public void SetColor(Color color)
+	{
+		MyPipeSystem.SetColor(color);
 	}
 }

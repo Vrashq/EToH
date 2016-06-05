@@ -18,8 +18,8 @@ public class PipeItem : MonoBehaviour {
 		rotater.localRotation = Quaternion.Euler(ringRotation, 0f, 0f);
 	}
 
-	public void Reset ()
+	public void SetColor (Color color)
 	{
-
+		rotater.GetChild(0).GetComponent<MeshRenderer>().material.SetColor("_Color", color);
 	}
 }

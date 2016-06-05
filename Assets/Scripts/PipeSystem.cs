@@ -67,4 +67,12 @@ public class PipeSystem : MonoBehaviour {
 			}
 		}
 	}
+
+	public void SetColor(Color color)
+	{
+		for (int i = 0; i < _pipes.Length; ++i)
+		{
+			_pipes[i].SetColor(color);
+		}
+	}
 }
