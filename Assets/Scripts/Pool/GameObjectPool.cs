@@ -9,14 +9,8 @@ public struct Pool
 	public string Name;
 	public GameObject Prefab;
 	public int Quantity;
-
-	[HideInInspector]
 	public int QuantityLoaded;
-
-	[HideInInspector]
 	public GameObject Root;
-
-	[HideInInspector]
 	public List<GameObject> Reserve;
 }
 
@@ -126,10 +120,9 @@ public class GameObjectPool : MonoBehaviour
 	* Instance *
 	***********/
 	private bool _initialized;
-
 	public List<Pool> Pools = new List<Pool>();
 	public int NumberOfInstancesPerFrame = 1000;
-	public bool InitOnLoad = false;
+	public bool bInitOnLoad = false;
 	public bool bIsLoading = false;
 	public LoadEvent LoadStart;
 	public LoadEvent LoadProgress;
@@ -148,7 +141,7 @@ public class GameObjectPool : MonoBehaviour
 	{
 		Instance = this;
 		_initialized = false;
-		if (InitOnLoad)
+		if (bInitOnLoad)
 		{
 			StartCoroutine(Init());
 		}
@@ -169,7 +162,6 @@ public class GameObjectPool : MonoBehaviour
 
 			LoadStart.Invoke(Progress);
 			yield return StartCoroutine(LoadPoolAsync());
-			yield return new WaitForSeconds(1.0f);
 			LoadEnd.Invoke(Progress);
 		}
 	}
