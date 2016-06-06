@@ -1,8 +1,8 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class HUD : MonoBehaviour {
-
+public class HUD : MonoBehaviour 
+{
 	public Text distanceLabel, velocityLabel;
 
 	public void SetValues (float distanceTraveled, float velocity) {

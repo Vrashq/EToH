@@ -130,7 +130,7 @@ public class GameObjectPool : MonoBehaviour
 	public List<Pool> Pools = new List<Pool>();
 	public int NumberOfInstancesPerFrame = 1000;
 	public bool InitOnLoad = false;
-
+	public bool bIsLoading = false;
 	public LoadEvent LoadStart;
 	public LoadEvent LoadProgress;
 	public LoadEvent LoadEnd;
@@ -196,12 +196,13 @@ public class GameObjectPool : MonoBehaviour
 
 	private IEnumerator LoadPoolAsync ()
 	{
+		bIsLoading = true;
 		Vector3 position =  Vector3.zero;
 		for(var p = 0; p < Pools.Count; ++p)
 		{
 			Pool pool = Pools[p];
-			Poolable test = pool.Prefab.GetComponent<Poolable>();
-			if (test == null)
+			Poolable poolable = pool.Prefab.GetComponent<Poolable>();
+			if (poolable == null)
 			{
 				pool.Prefab.AddComponent<Poolable>();
 			}
@@ -237,5 +238,6 @@ public class GameObjectPool : MonoBehaviour
 			}
 			Pools[p] = pool;
 		}
+		bIsLoading = false;
 	}
 }

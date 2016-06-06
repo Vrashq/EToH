@@ -24,10 +24,11 @@ public class CustomEditorGameObjectPool : Editor
 	{
 		GameObjectPool myTarget = (GameObjectPool)target;
 		List<Pool> poolsToRemove = new List<Pool>();
+		
 		Rect r = EditorGUILayout.BeginVertical();
 		{
+			r.height = 20;
 			EditorGUI.ProgressBar(r, myTarget.Progress, "Loading in progress");
-			GUILayout.Space(16);
 		}
 		EditorGUILayout.EndVertical();
 
@@ -46,6 +47,14 @@ public class CustomEditorGameObjectPool : Editor
 						EditorGUILayout.BeginVertical("box");
 						{
 							EditorGUILayout.LabelField(pool.Name, EditorStyles.boldLabel);
+							
+							Rect rp = EditorGUILayout.BeginVertical();
+							{
+								rp.height = 16;
+								EditorGUI.ProgressBar(r, pool.QuantityLoaded / pool.Quantity, "Pool loading");
+							}
+							EditorGUILayout.EndVertical();
+							
 							pool.Prefab = (GameObject)EditorGUILayout.ObjectField("Prefab: ", pool.Prefab, typeof(GameObject), false);
 							pool.Quantity = EditorGUILayout.IntField("Quantity: ", pool.Quantity);
 							EditorGUILayout.BeginHorizontal();

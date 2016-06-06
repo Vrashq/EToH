@@ -20,7 +20,7 @@ public class PipeSystem : MonoBehaviour
 		}
 	}
 
-	public Pipe SetupFirstPipe (bool menu = true) 
+	public Pipe SetupFirstPipe (bool isOnMenu) 
 	{
 		int pipeToGenerate = Mathf.FloorToInt(_pipes.Length * 0.5f);
 		
@@ -37,7 +37,7 @@ public class PipeSystem : MonoBehaviour
 		
 		for(int i = TutorialPipes; i < _pipes.Length; ++i)
 		{
-			_pipes[i].Generate(!menu);
+			_pipes[i].Generate(!isOnMenu);
 			_pipes[i].AlignWith(_pipes[i - 1]);
 		}
 		

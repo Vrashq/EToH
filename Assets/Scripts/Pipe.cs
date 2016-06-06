@@ -5,7 +5,7 @@ public class Pipe : MonoBehaviour
 {
 	public float PipeRadius;
 	public int PipeSegmentCount;
-	public float RingDistance;
+	public float RingDistance; // Distance between pipe's vertices rings
 	public float MinCurveRadius, MaxCurveRadius;
 	public int MinCurveSegmentCount, MaxCurveSegmentCount;
 	public PipeItemGenerator[] Generators;
@@ -69,7 +69,9 @@ public class Pipe : MonoBehaviour
 	}
 
 	private void SetVertices () {
+		// init the vertices array
 		_vertices = new Vector3[PipeSegmentCount * _curveSegmentCount * 4];
+		
 		float uStep = RingDistance / _curveRadius;
 		_curveAngle = uStep * _curveSegmentCount * (360f / (2f * Mathf.PI));
 		CreateFirstQuadRing(uStep);
@@ -147,13 +149,13 @@ public class Pipe : MonoBehaviour
 
 	public void AlignWith (Pipe pipe) {
 		_relativeRotation = Random.Range(0, _curveSegmentCount) * 360f / PipeSegmentCount;
-		transform.SetParent(pipe.transform, false);
+		transform.parent = pipe.transform;
 		transform.localPosition = Vector3.zero;
 		transform.localRotation = Quaternion.Euler(0f, 0f, -pipe._curveAngle);
 		transform.Translate(0f, pipe._curveRadius, 0f);
 		transform.Rotate(_relativeRotation, 0f, 0f);
 		transform.Translate(0f, -_curveRadius, 0f);
-		transform.SetParent(pipe.transform.parent);
+		transform.parent = pipe.transform.parent;
 		transform.localScale = Vector3.one;
 	}
 
