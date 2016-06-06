@@ -3,8 +3,8 @@ using System.Collections;
 
 public class Avatar : MonoBehaviour {
 
-	public ParticleSystem Trail, Burst;
 	public float DeathCountdown = -1f;
+	public ParticleSystem Trail, Burst;
 	public Transform Mesh, Camera;
 	public Player Player;
 	public Light Light;
@@ -19,7 +19,6 @@ public class Avatar : MonoBehaviour {
 		Trail.startColor = color * 1.5f;
 
 		Player.SetColor(color);
-		// Light.color = color;
 	}
 
 	void Update()
@@ -29,9 +28,7 @@ public class Avatar : MonoBehaviour {
 			DeathCountdown -= Time.deltaTime;
 			if (DeathCountdown <= 0f)
 			{
-				ParticleSystem.EmissionModule emissionModule = Trail.emission;
-				emissionModule.enabled = true;
-
+				Trail.enableEmission = true;
 				DeathCountdown = -1f;
 				Player.Die();
 			}
@@ -40,22 +37,20 @@ public class Avatar : MonoBehaviour {
 	}
 
 	void OnTriggerEnter (Collider collider) {
-		if(collider.transform.tag == "Obstacle")
+		if (DeathCountdown < 0f)
 		{
-			if (DeathCountdown < 0f)
+			if(collider.transform.tag == "Obstacle")
 			{
-				ParticleSystem.EmissionModule emissionModule = Trail.emission;
-				emissionModule.enabled = false;
-
+				Trail.enableEmission = false;
 				Burst.Emit(Burst.maxParticles);
 				DeathCountdown = Burst.startLifetime;
 				StartCoroutine(Shake(DeathCountdown));
 			}
-		}
-		else if (collider.transform.tag == "Bonus")
-		{
-			GameObjectPool.AddObjectIntoPool(collider.transform.parent.parent.gameObject);
-			Player.AddBonus();
+			else if (collider.transform.tag == "Bonus")
+			{
+				GameObjectPool.AddObjectIntoPool(collider.transform.parent.parent.gameObject);
+				Player.AddBonus();
+			}
 		}
 	}
 

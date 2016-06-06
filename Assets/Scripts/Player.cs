@@ -38,10 +38,10 @@ public class Player : MonoBehaviour {
 
 	public void Init()
 	{
-		MyPipeSystem.Start();
+		MyPipeSystem.StartSystem();
 		Hud.gameObject.SetActive(false);
 		gameObject.SetActive(true);
-		_currentPipe = MyPipeSystem.SetupFirstPipe();
+		_currentPipe = MyPipeSystem.SetupFirstPipe(true);
 		_velocity = StartVelocity;
 		SetupCurrentPipe();
 	}
@@ -72,7 +72,7 @@ public class Player : MonoBehaviour {
 		_avatarRotation = 0f;
 		_systemRotation = 0f;
 		_worldRotation = 0f;
-		_currentPipe = MyPipeSystem.SetupFirstPipe();
+		_currentPipe = MyPipeSystem.SetupFirstPipe(false);
 		_velocity = StartVelocity;
 		SetupCurrentPipe();
 		Hud.SetValues(_distanceTraveled, _velocity);
@@ -86,7 +86,7 @@ public class Player : MonoBehaviour {
 		MainMenu.EndGame(sendScore ? _distanceTraveled : 0);
 		Hud.gameObject.SetActive(false);
 		gameObject.SetActive(true);
-		_currentPipe = MyPipeSystem.SetupFirstPipe();
+		_currentPipe = MyPipeSystem.SetupFirstPipe(true);
 		_velocity = StartVelocity;
 		SetupCurrentPipe();
 		_bIsGameStarted = false;
