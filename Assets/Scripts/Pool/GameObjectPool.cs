@@ -6,6 +6,10 @@ using System.Collections.Generic;
 [System.Serializable]
 public struct Pool
 {
+	#region inspector
+	public bool bIsOpen;
+	#endregion
+	
 	public string Name;
 	public GameObject Prefab;
 	public int Quantity;
@@ -137,7 +141,7 @@ public class GameObjectPool : MonoBehaviour
 		}
 	}
 
-	public void Awake ()
+	public void Start ()
 	{
 		Instance = this;
 		_initialized = false;

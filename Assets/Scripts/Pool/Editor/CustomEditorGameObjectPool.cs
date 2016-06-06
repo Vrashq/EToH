@@ -18,8 +18,6 @@ public class CustomEditorGameObjectPool : Editor
 		}
 	}
 
-	private Vector2 _scrollPosition;
-
 	public override void OnInspectorGUI()
 	{
 		GameObjectPool myTarget = (GameObjectPool)target;
@@ -42,33 +40,42 @@ public class CustomEditorGameObjectPool : Editor
 					for (var p = 0; p < myTarget.Pools.Count; ++p)
 					{
 						Pool pool = myTarget.Pools[p];
-						pool.Name = pool.Prefab != null ? pool.Prefab.name : "Need a Prefab !";
+						pool.Name = pool.Prefab != null ? pool.Prefab.name : "Unkown pool";
 
 						EditorGUILayout.BeginVertical("box");
 						{
-							EditorGUILayout.LabelField(pool.Name, EditorStyles.boldLabel);
-							
-							Rect rp = EditorGUILayout.BeginVertical();
+							EditorGUILayout.BeginVertical("box");
 							{
-								rp.height = 16;
-								EditorGUI.ProgressBar(r, pool.QuantityLoaded / pool.Quantity, "Pool loading");
+								EditorGUILayout.LabelField(pool.Name, EditorStyles.boldLabel);
+								GUILayout.FlexibleSpace();
+								pool.bIsOpen = EditorGUILayout.Toggle(pool.bIsOpen);
 							}
 							EditorGUILayout.EndVertical();
 							
-							pool.Prefab = (GameObject)EditorGUILayout.ObjectField("Prefab: ", pool.Prefab, typeof(GameObject), false);
-							pool.Quantity = EditorGUILayout.IntField("Quantity: ", pool.Quantity);
-							EditorGUILayout.BeginHorizontal();
+							if(pool.bIsOpen)
 							{
-								if (GUILayout.Button("Duplicate Pool"))
+								Rect rp = EditorGUILayout.BeginVertical();
 								{
-									myTarget.DuplicatePool(pool);
+									rp.height = 16;
+									EditorGUI.ProgressBar(r, pool.QuantityLoaded / pool.Quantity, "Pool loading");
 								}
-								if (GUILayout.Button("Delete Pool"))
+								EditorGUILayout.EndVertical();
+								
+								pool.Prefab = (GameObject)EditorGUILayout.ObjectField("Prefab: ", pool.Prefab, typeof(GameObject), false);
+								pool.Quantity = EditorGUILayout.IntField("Quantity: ", pool.Quantity);
+								EditorGUILayout.BeginHorizontal();
 								{
-									poolsToRemove.Add(pool);
+									if (GUILayout.Button("Duplicate Pool"))
+									{
+										myTarget.DuplicatePool(pool);
+									}
+									if (GUILayout.Button("Delete Pool"))
+									{
+										poolsToRemove.Add(pool);
+									}
 								}
+								EditorGUILayout.EndHorizontal();
 							}
-							EditorGUILayout.EndHorizontal();
 						}
 						EditorGUILayout.EndVertical();
 						myTarget.Pools[p] = pool;
@@ -95,7 +102,7 @@ public class CustomEditorGameObjectPool : Editor
 		{
 			EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
 			myTarget.NumberOfInstancesPerFrame = EditorGUILayout.IntField("Quantity Generated per frame: ", myTarget.NumberOfInstancesPerFrame);
-			myTarget.InitOnLoad = EditorGUILayout.Toggle("Init on Load", myTarget.InitOnLoad);
+			myTarget.bInitOnLoad = EditorGUILayout.Toggle("Load on Start", myTarget.bInitOnLoad);
 			SerializedProperty loadStart = serializedObject.FindProperty("LoadStart");
 			SerializedProperty loadProgress = serializedObject.FindProperty("LoadProgress");
 			SerializedProperty loadEnd = serializedObject.FindProperty("LoadEnd");
@@ -105,10 +112,19 @@ public class CustomEditorGameObjectPool : Editor
 			EditorGUILayout.PropertyField(loadEnd);
 
 			serializedObject.ApplyModifiedProperties();
-
+			
+			if(GUILayout.Button("Generate static data files")) 
+			{
+				CreateStaticDataFiles();
+			}
 		}
 		EditorGUILayout.EndVertical();
 
 		SceneView.RepaintAll();
+	}
+	
+	static void CreateStaticDataFiles ()
+	{
+		
 	}
 }
