@@ -48,7 +48,10 @@ public class CustomEditorGameObjectPool : Editor
 							{
 								EditorGUILayout.LabelField(pool.Name, EditorStyles.boldLabel);
 								GUILayout.FlexibleSpace();
-								pool.bIsOpen = EditorGUILayout.Toggle(pool.bIsOpen);
+								if(GUILayout.Button(pool.bIsOpen ? "O" : "C", GUILayout.Width(50), GUILayout.Height(25)))
+								{
+									pool.bIsOpen = !pool.bIsOpen;
+								}
 							}
 							EditorGUILayout.EndVertical();
 							
