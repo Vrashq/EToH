@@ -1,9 +1,8 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
-public class Player : MonoBehaviour {
-
+public class Player : MonoBehaviour 
+{
+	#region public
 	public PipeSystem MyPipeSystem;
 	public float StartVelocity;
 	public float RotationVelocity;
@@ -13,7 +12,8 @@ public class Player : MonoBehaviour {
 	public float[] Accelerations;
 	public Avatar Avatar;
 	public float MaxAngleRotation;
-
+	#endregion
+	#region private
 	private Pipe _currentPipe;
 	private float _acceleration, _velocity;
 	private float _distanceTraveled;
@@ -27,9 +27,9 @@ public class Player : MonoBehaviour {
 	private float _ballRotation = 0;
 	private float _bonusVelocity = 0;
 	private EDifficulty _difficulty;
+	#endregion
 
-
-	private void Awake()
+	void Awake()
 	{
 		_world = MyPipeSystem.transform.parent;
 		_rotater = transform.GetChild(0);
@@ -96,7 +96,7 @@ public class Player : MonoBehaviour {
 
 	private void Update ()
 	{
-		if((!_bIsGamePaused && _bIsGameStarted) || (_bIsGameStarted && !_bIsGamePaused) || _bIsOnMenu)
+		if((!_bIsGamePaused && _bIsGameStarted) || _bIsOnMenu)
 		{
 			_velocity += _acceleration * Time.deltaTime;
 			float delta = (_velocity + _bonusVelocity) * Time.deltaTime;
