@@ -26,6 +26,8 @@ public class GameObjectPool : MonoBehaviour
 	/*********
 	* Static *
 	*********/
+	public const string VERSION = "1.0.0";
+	
 	public static GameObjectPool Instance;
 
 	public static GameObject GetAvailableObject(string poolName)
@@ -170,9 +172,12 @@ public class GameObjectPool : MonoBehaviour
 		}
 	}
 
-	public void AddPool ()
+	public void AddPool (GameObject prefab = null)
 	{
-		Pools.Add(new Pool());
+		Pool pool = new Pool();
+		pool.Name = "Unkown Pool";
+		pool.Prefab = prefab;
+		Pools.Add(pool);
 	}
 
 	public void RemovePool (Pool pool)

@@ -20,77 +20,71 @@ public class CustomEditorGameObjectPool : Editor
 
 	public override void OnInspectorGUI()
 	{
+		// DrawDefaultInspector();
 		GameObjectPool myTarget = (GameObjectPool)target;
 		List<Pool> poolsToRemove = new List<Pool>();
-		
-		Rect r = EditorGUILayout.BeginVertical();
-		{
-			r.height = 20;
-			EditorGUI.ProgressBar(r, myTarget.Progress, "Loading in progress");
-		}
-		EditorGUILayout.EndVertical();
 
 		EditorGUILayout.BeginVertical("box");
 		{
-			EditorGUILayout.BeginVertical("box");
-			{
-				EditorGUILayout.LabelField("Pools availables", EditorStyles.boldLabel);
-				EditorGUILayout.BeginVertical();
-				{
-					for (var p = 0; p < myTarget.Pools.Count; ++p)
-					{
-						Pool pool = myTarget.Pools[p];
-						pool.Name = pool.Prefab != null ? pool.Prefab.name : "Unkown pool";
+			GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
+			style.richText = true;
+			style.alignment = TextAnchor.MiddleCenter;
+			style.fontSize = 15;
+			GUILayout.Label("GameObject Pool Manager v" + GameObjectPool.VERSION, style, GUILayout.Height(20));
+		}
+		EditorGUILayout.EndVertical();
 
-						EditorGUILayout.BeginVertical("box");
+		EditorGUILayout.Separator();
+		
+		EditorGUILayout.BeginVertical("box");
+		{
+			EditorGUILayout.BeginVertical();
+			{
+				for (var p = 0; p < myTarget.Pools.Count; ++p)
+				{
+					Pool pool = myTarget.Pools[p];
+					pool.Name = pool.Prefab != null ? pool.Prefab.name : "Unkown pool";
+
+					EditorGUILayout.BeginVertical("box");
+					{
+						EditorGUILayout.BeginHorizontal();
 						{
-							EditorGUILayout.BeginVertical("box");
+							EditorGUILayout.LabelField(pool.Name + "  " + (pool.Reserve != null ? pool.Reserve.Count : 0) + "/" + pool.Quantity, EditorStyles.boldLabel);
+							GUILayout.FlexibleSpace();
+							GUIStyle styleButton = new GUIStyle(EditorStyles.miniButtonRight);
+							if(GUILayout.Button("", styleButton, GUILayout.Width(25), GUILayout.Height(20)))
 							{
-								EditorGUILayout.LabelField(pool.Name, EditorStyles.boldLabel);
-								GUILayout.FlexibleSpace();
-								if(GUILayout.Button(pool.bIsOpen ? "O" : "C", GUILayout.Width(50), GUILayout.Height(25)))
-								{
-									pool.bIsOpen = !pool.bIsOpen;
-								}
-							}
-							EditorGUILayout.EndVertical();
-							
-							if(pool.bIsOpen)
-							{
-								Rect rp = EditorGUILayout.BeginVertical();
-								{
-									rp.height = 16;
-									EditorGUI.ProgressBar(r, pool.QuantityLoaded / pool.Quantity, "Pool loading");
-								}
-								EditorGUILayout.EndVertical();
-								
-								pool.Prefab = (GameObject)EditorGUILayout.ObjectField("Prefab: ", pool.Prefab, typeof(GameObject), false);
-								pool.Quantity = EditorGUILayout.IntField("Quantity: ", pool.Quantity);
-								EditorGUILayout.BeginHorizontal();
-								{
-									if (GUILayout.Button("Duplicate Pool"))
-									{
-										myTarget.DuplicatePool(pool);
-									}
-									if (GUILayout.Button("Delete Pool"))
-									{
-										poolsToRemove.Add(pool);
-									}
-								}
-								EditorGUILayout.EndHorizontal();
+								pool.bIsOpen = !pool.bIsOpen;
 							}
 						}
-						EditorGUILayout.EndVertical();
-						myTarget.Pools[p] = pool;
+						EditorGUILayout.EndHorizontal();
+						
+						if(pool.bIsOpen)
+						{
+							GUILayout.Space(8);
+							
+							pool.Prefab = (GameObject)EditorGUILayout.ObjectField("Prefab: ", pool.Prefab, typeof(GameObject), false);
+							pool.Quantity = EditorGUILayout.IntField("Quantity: ", pool.Quantity);
+							EditorGUILayout.BeginHorizontal();
+							{
+								if (GUILayout.Button("Duplicate Pool"))
+								{
+									myTarget.DuplicatePool(pool);
+								}
+								if (GUILayout.Button("Delete Pool"))
+								{
+									poolsToRemove.Add(pool);
+								}
+							}
+							EditorGUILayout.EndHorizontal();
+						}
 					}
+					EditorGUILayout.EndVertical();
+					myTarget.Pools[p] = pool;
 				}
-				EditorGUILayout.EndVertical();
 			}
 			EditorGUILayout.EndVertical();
-			if (GUILayout.Button("Add Pool"))
-			{
-				myTarget.AddPool();
-			}
+			DropAreaNewPool(myTarget);
 
 			for (var p = 0; p < poolsToRemove.Count; ++p)
 			{
@@ -125,6 +119,43 @@ public class CustomEditorGameObjectPool : Editor
 
 		SceneView.RepaintAll();
 	}
+ 
+    static void DropAreaNewPool (GameObjectPool myTarget)
+    {
+		GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
+		style.normal.textColor = Color.black;
+		style.richText = true;
+		style.alignment = TextAnchor.MiddleCenter;
+		style.fontSize = 15;
+		
+		Event evt = Event.current;
+		Rect drop_area = EditorGUILayout.BeginHorizontal("box");
+		{
+			EditorGUILayout.LabelField("Drop Prefab to create new pool", style, GUILayout.Height(50));
+		}
+		EditorGUILayout.EndVertical();
+     
+        switch (evt.type) {
+        case EventType.DragUpdated:
+        case EventType.DragPerform:
+            if (!drop_area.Contains (evt.mousePosition))
+                return;
+             
+            DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+         
+            if (evt.type == EventType.DragPerform) {
+                DragAndDrop.AcceptDrag ();
+             
+                foreach (Object dragged_object in DragAndDrop.objectReferences) {
+					if((GameObject)dragged_object != null)
+					{
+						myTarget.AddPool((GameObject)dragged_object);
+					}
+                }
+            }
+            break;
+        }
+    }
 	
 	static void CreateStaticDataFiles ()
 	{
