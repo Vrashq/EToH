@@ -28,7 +28,8 @@ public class Avatar : MonoBehaviour {
 			DeathCountdown -= Time.deltaTime;
 			if (DeathCountdown <= 0f)
 			{
-				Trail.enableEmission = true;
+				ParticleSystem.EmissionModule emission = Trail.emission;
+				emission.enabled = true;
 				DeathCountdown = -1f;
 				Player.Die();
 			}
@@ -41,7 +42,8 @@ public class Avatar : MonoBehaviour {
 		{
 			if(collider.transform.tag == "Obstacle")
 			{
-				Trail.enableEmission = false;
+				ParticleSystem.EmissionModule emission = Trail.emission;
+				emission.enabled = false;
 				Burst.Emit(Burst.maxParticles);
 				DeathCountdown = Burst.startLifetime;
 				StartCoroutine(Shake(DeathCountdown));

@@ -6,7 +6,6 @@ using UnityEditor;
 [CustomEditor(typeof(GameObjectPool))]
 public class CustomEditorGameObjectPool : Editor
 {
-
 	[MenuItem("GameObject/Create GameObject Pool")]
 	public static void CreateGameObjecrPool ()
 	{
@@ -18,105 +17,138 @@ public class CustomEditorGameObjectPool : Editor
 		}
 	}
 
+	private GameObjectPool _myTarget;
+	private Color _defaultColor;
+	private Color _defaultBackgroundColor;
+
+	void OnEnable ()
+	{
+		_myTarget = (GameObjectPool)target;
+		for(var i = 0; i < _myTarget.Pools.Count; ++i)
+		{
+			Pool pool = _myTarget.Pools[i];
+			pool.bIsOpen = false;
+			_myTarget.Pools[i] = pool;
+		}
+		
+		_defaultColor = GUI.color;
+		_defaultBackgroundColor = GUI.backgroundColor;
+	}
+	
 	public override void OnInspectorGUI()
 	{
-		// DrawDefaultInspector();
-		GameObjectPool myTarget = (GameObjectPool)target;
-		List<Pool> poolsToRemove = new List<Pool>();
-
+		SetGUIBackgroundColor(Color.white * 0.75f);
 		EditorGUILayout.BeginVertical("box");
 		{
-			GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
-			style.richText = true;
-			style.alignment = TextAnchor.MiddleCenter;
-			style.fontSize = 15;
-			GUILayout.Label("GameObject Pool Manager v" + GameObjectPool.VERSION, style, GUILayout.Height(20));
-		}
-		EditorGUILayout.EndVertical();
+			// DrawDefaultInspector();
+			List<Pool> poolsToRemove = new List<Pool>();
 
-		EditorGUILayout.Separator();
-		
-		EditorGUILayout.BeginVertical("box");
-		{
-			EditorGUILayout.BeginVertical();
+			SetGUIBackgroundColor(Color.white);
+			EditorGUILayout.BeginVertical("box");
 			{
-				for (var p = 0; p < myTarget.Pools.Count; ++p)
-				{
-					Pool pool = myTarget.Pools[p];
-					pool.Name = pool.Prefab != null ? pool.Prefab.name : "Unkown pool";
+				GUIStyle style = new GUIStyle(EditorStyles.boldLabel);
+				style.richText = true;
+				style.alignment = TextAnchor.MiddleCenter;
+				style.fontSize = 15;
+				GUILayout.Label("GameObject Pool Manager v" + GameObjectPool.VERSION, style, GUILayout.Height(20));
+			}
+			EditorGUILayout.EndVertical();
+			SetGUIBackgroundColor(Color.white * 0.75f);
 
-					EditorGUILayout.BeginVertical("box");
+			EditorGUILayout.Separator();
+			
+			SetGUIBackgroundColor(Color.white);
+			EditorGUILayout.BeginVertical("box");
+			{
+				EditorGUILayout.BeginVertical();
+				{
+					for (var p = 0; p < _myTarget.Pools.Count; ++p)
 					{
-						EditorGUILayout.BeginHorizontal();
+						Pool pool = _myTarget.Pools[p];
+
+						EditorGUILayout.BeginVertical("box");
 						{
-							EditorGUILayout.LabelField(pool.Name + "  " + (pool.Reserve != null ? pool.Reserve.Count : 0) + "/" + pool.Quantity, EditorStyles.boldLabel);
-							GUILayout.FlexibleSpace();
-							GUIStyle styleButton = new GUIStyle(EditorStyles.miniButtonRight);
-							if(GUILayout.Button("", styleButton, GUILayout.Width(25), GUILayout.Height(20)))
-							{
-								pool.bIsOpen = !pool.bIsOpen;
-							}
-						}
-						EditorGUILayout.EndHorizontal();
-						
-						if(pool.bIsOpen)
-						{
-							GUILayout.Space(8);
-							
-							pool.Prefab = (GameObject)EditorGUILayout.ObjectField("Prefab: ", pool.Prefab, typeof(GameObject), false);
-							pool.Quantity = EditorGUILayout.IntField("Quantity: ", pool.Quantity);
 							EditorGUILayout.BeginHorizontal();
 							{
-								if (GUILayout.Button("Duplicate Pool"))
+								EditorGUILayout.LabelField(pool.Name + "  " + (pool.Reserve != null ? pool.Reserve.Count : 0) + "/" + pool.Quantity, EditorStyles.boldLabel);
+								GUILayout.FlexibleSpace();
+								GUIStyle styleButton = new GUIStyle(EditorStyles.miniButtonRight);
+								SetGUIBackgroundColor(Color.cyan);
+								if(GUILayout.Button("", styleButton, GUILayout.Width(25), GUILayout.Height(20)))
 								{
-									myTarget.DuplicatePool(pool);
+									pool.bIsOpen = !pool.bIsOpen;
 								}
-								if (GUILayout.Button("Delete Pool"))
-								{
-									poolsToRemove.Add(pool);
-								}
+								SetGUIBackgroundColor(Color.white);
 							}
 							EditorGUILayout.EndHorizontal();
+							
+							Rect progressBarRect = GUILayoutUtility.GetRect(300,25);
+							EditorGUI.ProgressBar(progressBarRect, pool.Reserve != null ? (float)pool.Reserve.Count / (float)pool.Quantity : 0, "");
+							
+							if(pool.bIsOpen)
+							{
+								GUILayout.Space(8);
+								
+								pool.Prefab = (GameObject)EditorGUILayout.ObjectField("Prefab: ", pool.Prefab, typeof(GameObject), false);
+								pool.Quantity = EditorGUILayout.IntField("Quantity: ", pool.Quantity);
+								EditorGUILayout.BeginHorizontal();
+								{
+									if (GUILayout.Button("Duplicate Pool"))
+									{
+										_myTarget.DuplicatePool(pool);
+									}
+									if (GUILayout.Button("Delete Pool"))
+									{
+										poolsToRemove.Add(pool);
+									}
+								}
+								EditorGUILayout.EndHorizontal();
+							}
 						}
+						EditorGUILayout.EndVertical();
+						_myTarget.Pools[p] = pool;
 					}
-					EditorGUILayout.EndVertical();
-					myTarget.Pools[p] = pool;
+				}
+				EditorGUILayout.EndVertical();
+				DropAreaNewPool(_myTarget);
+
+				for (var p = 0; p < poolsToRemove.Count; ++p)
+				{
+					_myTarget.RemovePool(poolsToRemove[p]);
 				}
 			}
 			EditorGUILayout.EndVertical();
-			DropAreaNewPool(myTarget);
+			SetGUIBackgroundColor(Color.white * 0.75f);
 
-			for (var p = 0; p < poolsToRemove.Count; ++p)
+			EditorGUILayout.Separator();
+
+			SetGUIBackgroundColor(Color.white);
+			EditorGUILayout.BeginVertical("box");
 			{
-				myTarget.RemovePool(poolsToRemove[p]);
+				EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
+				_myTarget.NumberOfInstancesPerFrame = EditorGUILayout.IntField("Quantity Generated per frame: ", _myTarget.NumberOfInstancesPerFrame);
+				_myTarget.bInitOnLoad = EditorGUILayout.Toggle("Load on Start", _myTarget.bInitOnLoad);
+				SerializedProperty loadStart = serializedObject.FindProperty("LoadStart");
+				SerializedProperty loadProgress = serializedObject.FindProperty("LoadProgress");
+				SerializedProperty loadEnd = serializedObject.FindProperty("LoadEnd");
+
+				EditorGUILayout.PropertyField(loadStart);
+				EditorGUILayout.PropertyField(loadProgress);
+				EditorGUILayout.PropertyField(loadEnd);
+
+				serializedObject.ApplyModifiedProperties();
+				
+				/*if(GUILayout.Button("Generate static data files")) 
+				{
+					CreateStaticDataFiles();
+				}*/
 			}
+			EditorGUILayout.EndVertical();
+			SetGUIBackgroundColor(Color.white * 0.75f);
 		}
 		EditorGUILayout.EndVertical();
 
-		EditorGUILayout.Separator();
-
-		EditorGUILayout.BeginVertical("box");
-		{
-			EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
-			myTarget.NumberOfInstancesPerFrame = EditorGUILayout.IntField("Quantity Generated per frame: ", myTarget.NumberOfInstancesPerFrame);
-			myTarget.bInitOnLoad = EditorGUILayout.Toggle("Load on Start", myTarget.bInitOnLoad);
-			SerializedProperty loadStart = serializedObject.FindProperty("LoadStart");
-			SerializedProperty loadProgress = serializedObject.FindProperty("LoadProgress");
-			SerializedProperty loadEnd = serializedObject.FindProperty("LoadEnd");
-
-			EditorGUILayout.PropertyField(loadStart);
-			EditorGUILayout.PropertyField(loadProgress);
-			EditorGUILayout.PropertyField(loadEnd);
-
-			serializedObject.ApplyModifiedProperties();
-			
-			if(GUILayout.Button("Generate static data files")) 
-			{
-				CreateStaticDataFiles();
-			}
-		}
-		EditorGUILayout.EndVertical();
-
+		SetDefaultGUIBackgroundColor();
 		SceneView.RepaintAll();
 	}
  
@@ -157,8 +189,23 @@ public class CustomEditorGameObjectPool : Editor
         }
     }
 	
-	static void CreateStaticDataFiles ()
+	void SetDefaultGUIBackgroundColor ()
 	{
-		
+		GUI.backgroundColor = _defaultBackgroundColor;
+	}
+	
+	void SetGUIBackgroundColor (Color color)
+	{
+		GUI.backgroundColor = color;
+	}
+	
+	void SetDefaultGUIColor ()
+	{
+		GUI.color = _defaultColor;
+	}
+	
+	void SetGUIColor (Color color)
+	{
+		GUI.color = color;
 	}
 }

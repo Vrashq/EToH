@@ -6,16 +6,17 @@ using System.Collections.Generic;
 [System.Serializable]
 public struct Pool
 {
-	#region inspector
 	public bool bIsOpen;
-	#endregion
-	
-	public string Name;
 	public GameObject Prefab;
 	public int Quantity;
 	public int QuantityLoaded;
 	public GameObject Root;
 	public List<GameObject> Reserve;
+	public string Name {
+		get {
+			return Prefab != null ? Prefab.name : "Unkown Pool";
+		}
+	}
 }
 
 [System.Serializable]
@@ -26,7 +27,7 @@ public class GameObjectPool : MonoBehaviour
 	/*********
 	* Static *
 	*********/
-	public const string VERSION = "1.0.0";
+	public const string VERSION = "1.0.1";
 	
 	public static GameObjectPool Instance;
 
@@ -51,6 +52,7 @@ public class GameObjectPool : MonoBehaviour
 				{
 					Debug.LogError("GameObjectPool >>>> Not enough items in this pool: " + poolName);
 					Debug.Break();
+					return null;
 				}
 			}
 		}
@@ -172,10 +174,10 @@ public class GameObjectPool : MonoBehaviour
 		}
 	}
 
+	#if UNITY_EDITOR
 	public void AddPool (GameObject prefab = null)
 	{
 		Pool pool = new Pool();
-		pool.Name = "Unkown Pool";
 		pool.Prefab = prefab;
 		Pools.Add(pool);
 	}
@@ -188,12 +190,11 @@ public class GameObjectPool : MonoBehaviour
 	public void DuplicatePool (Pool pool)
 	{
 		Pool newPool = new Pool();
-		newPool.Name = pool.Name + "Copy";
 		newPool.Prefab = pool.Prefab;
 		newPool.Quantity = pool.Quantity;
-
 		Pools.Add(newPool);
 	}
+	#endif
 
 	private IEnumerator LoadPoolAsync ()
 	{
@@ -235,6 +236,7 @@ public class GameObjectPool : MonoBehaviour
 					++ElementsLoaded;
 				}
 				LoadProgress.Invoke(Progress);
+				Pools[p] = pool;
 				yield return null;
 			}
 			Pools[p] = pool;

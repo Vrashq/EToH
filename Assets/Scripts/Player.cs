@@ -13,6 +13,7 @@ public class Player : MonoBehaviour {
 	public float[] Accelerations;
 	public Avatar Avatar;
 	public float MaxAngleRotation;
+	public bool bSpawnBonuses;
 
 	private Pipe _currentPipe;
 	private float _acceleration, _velocity;
