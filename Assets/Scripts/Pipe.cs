@@ -1,7 +1,12 @@
 ﻿using UnityEngine;
+using PanzerNoob;
+using PanzerNoob.Tools;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 [RequireComponent(typeof(MeshRenderer), typeof(MeshFilter))]
-public class Pipe : MonoBehaviour
+public class Pipe : Actor
 {
 	public float PipeRadius;
 	public int PipeSegmentCount;
@@ -19,6 +24,11 @@ public class Pipe : MonoBehaviour
 	private float _curveAngle;
 	private float _relativeRotation;
 	private Color _currentColor;
+	
+	[AutoFinder(AutoFinder.Mode.Self), SerializeField]
+	private MeshRenderer _meshRenderer;
+	[AutoFinder(AutoFinder.Mode.Self), SerializeField]
+	private MeshFilter _meshFilter;
 
 	public float CurveAngle {
 		get {
@@ -44,12 +54,17 @@ public class Pipe : MonoBehaviour
 		}
 	}
 
-	private void Awake () {
-		GetComponent<MeshFilter>().mesh = _mesh = new Mesh();
+	private void OnActorStart () {
+		if(_mesh == null) GenerateMesh();
+	}
+
+	private void GenerateMesh () {
+		_meshFilter.mesh = _mesh = new Mesh();
 		_mesh.name = "Pipe";
 	}
 
 	public void Generate (bool withItems = true) {
+		if(_mesh == null) GenerateMesh();
 		_curveRadius = Random.Range(MinCurveRadius, MaxCurveRadius);
 		_curveSegmentCount = Random.Range(MinCurveSegmentCount, MaxCurveSegmentCount + 1);
 		_mesh.Clear();

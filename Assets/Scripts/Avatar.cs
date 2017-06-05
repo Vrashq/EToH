@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
-
-public class Avatar : MonoBehaviour {
+using PanzerNoob;
+public class Avatar : Actor {
 
 	public float DeathCountdown = -1f;
 	public ParticleSystem Trail, Burst;
@@ -12,12 +12,10 @@ public class Avatar : MonoBehaviour {
 	public void SetRandomColor ()
 	{
 		Color color = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
-
 		Material material = Mesh.GetComponent<MeshRenderer>().material;
 		material.color = color;
 		material.SetColor("_EmissionColor", color);
 		Trail.startColor = color * 1.5f;
-
 		Player.SetColor(color);
 	}
 
@@ -37,7 +35,7 @@ public class Avatar : MonoBehaviour {
 		}
 	}
 
-	void OnTriggerEnter (Collider collider) {
+	protected virtual void OnActorTriggerEnter (Collider collider) {
 		if (DeathCountdown < 0f)
 		{
 			if(collider.transform.tag == "Obstacle")

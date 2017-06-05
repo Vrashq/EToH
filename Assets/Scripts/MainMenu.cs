@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using PanzerNoob;
 
 [System.Serializable]
 public enum EDifficulty
@@ -11,7 +12,7 @@ public enum EDifficulty
 	QuitGame = 3
 }
 
-public class MainMenu : MonoBehaviour
+public class MainMenu : Actor
 {
 	private EDifficulty _currentDifficulty = EDifficulty.Easy;
 	private Animator _animator;
@@ -22,7 +23,7 @@ public class MainMenu : MonoBehaviour
 	public Text[] scoreLabels;
 	public float swipeSpeed = 0.2f;
 
-	private void Awake () {
+	protected void OnActorAwake () {
 		Application.targetFrameRate = 1000;
 		SaveLoad.Load();
 		SetScore(scoreLabels[(int)EDifficulty.Easy], SaveLoad.savedGames[0]);

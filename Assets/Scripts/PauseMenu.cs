@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using PanzerNoob;
 
 [System.Serializable]
 public enum EPauseSelected
@@ -8,7 +9,7 @@ public enum EPauseSelected
 	Quit = 1
 }
 
-public class PauseMenu : MonoBehaviour
+public class PauseMenu : Actor
 {
 	public RectTransform Buttons;
 	public float swipeSpeed = 0.2f;
@@ -19,13 +20,14 @@ public class PauseMenu : MonoBehaviour
 	private EPauseSelected _currentSelected;
 	[SerializeField] private bool _bCanTouch = false;
 
-	public void Awake ()
+	protected void OnActorStart ()
 	{
 		RectTransform quit = Buttons.GetChild(1).GetComponent<RectTransform>();
 		quit.anchoredPosition = new Vector2(Screen.width, -15.0f);
+		gameObject.SetActive(false);
 	}
 
-	public void OnEnable ()
+	protected void OnActorEnable ()
 	{
 		_animator = GetComponent<Animator>();
 		_animator.SetTrigger("Animate");

@@ -1,17 +1,20 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
+using PanzerNoob;
+using PanzerNoob.Tools;
 
-public class Player : MonoBehaviour {
+public class Player : Actor 
+{
+	[AutoFinder(AutoFinder.Mode.Children, "Avatar")] public Avatar Avatar;
+	[AutoFinder(AutoFinder.Mode.World)] public PipeSystem PipeSystem;
+	[AutoFinder(AutoFinder.Mode.World)] public MainMenu MainMenu;
+	[AutoFinder(AutoFinder.Mode.World)] public HUD Hud;
+	[AutoFinder(AutoFinder.Mode.World)] public PauseMenu PauseMenu;
 
-	public PipeSystem MyPipeSystem;
 	public float StartVelocity;
 	public float RotationVelocity;
-	public MainMenu MainMenu;
-	public HUD Hud;
-	public PauseMenu PauseMenu;
 	public float[] Accelerations;
-	public Avatar Avatar;
 	public float MaxAngleRotation;
 	public bool bSpawnBonuses;
 
@@ -30,19 +33,19 @@ public class Player : MonoBehaviour {
 	private EDifficulty _difficulty;
 
 
-	private void Awake()
+	protected virtual void OnActorAwake()
 	{
-		_world = MyPipeSystem.transform.parent;
+		_world = PipeSystem.transform.parent;
 		_rotater = transform.GetChild(0);
 		gameObject.SetActive(false);
 	}
 
 	public void Init()
 	{
-		MyPipeSystem.StartSystem();
+		PipeSystem.StartSystem();
 		Hud.gameObject.SetActive(false);
 		gameObject.SetActive(true);
-		_currentPipe = MyPipeSystem.SetupFirstPipe(true);
+		_currentPipe = PipeSystem.SetupFirstPipe(true);
 		_velocity = StartVelocity;
 		SetupCurrentPipe();
 	}
@@ -73,7 +76,7 @@ public class Player : MonoBehaviour {
 		_avatarRotation = 0f;
 		_systemRotation = 0f;
 		_worldRotation = 0f;
-		_currentPipe = MyPipeSystem.SetupFirstPipe(false);
+		_currentPipe = PipeSystem.SetupFirstPipe(false);
 		_velocity = StartVelocity;
 		SetupCurrentPipe();
 		Hud.SetValues(_distanceTraveled, _velocity);
@@ -87,7 +90,7 @@ public class Player : MonoBehaviour {
 		MainMenu.EndGame(sendScore ? _distanceTraveled : 0);
 		Hud.gameObject.SetActive(false);
 		gameObject.SetActive(true);
-		_currentPipe = MyPipeSystem.SetupFirstPipe(true);
+		_currentPipe = PipeSystem.SetupFirstPipe(true);
 		_velocity = StartVelocity;
 		SetupCurrentPipe();
 		_bIsGameStarted = false;
@@ -95,7 +98,7 @@ public class Player : MonoBehaviour {
 		_bIsOnMenu = true;
 	}
 
-	private void Update ()
+	protected virtual void OnActorUpdate ()
 	{
 		if((!_bIsGamePaused && _bIsGameStarted) || (_bIsGameStarted && !_bIsGamePaused) || _bIsOnMenu)
 		{
@@ -107,11 +110,11 @@ public class Player : MonoBehaviour {
 			if (_systemRotation >= _currentPipe.CurveAngle)
 			{
 				delta = (_systemRotation - _currentPipe.CurveAngle) / _deltaToRotation;
-				_currentPipe = MyPipeSystem.SetupNextPipe(_bIsGameStarted);
+				_currentPipe = PipeSystem.SetupNextPipe(_bIsGameStarted);
 				SetupCurrentPipe();
 				_systemRotation = delta * _deltaToRotation;
 			}
-			MyPipeSystem.transform.localRotation = Quaternion.Euler(0f, 0f, _systemRotation);
+			PipeSystem.transform.localRotation = Quaternion.Euler(0f, 0f, _systemRotation);
 			UpdateAvatarRotation();
 			Hud.SetValues(_distanceTraveled, _velocity);
 		}
@@ -151,12 +154,7 @@ public class Player : MonoBehaviour {
 			}
 		}
 		_avatarRotation += RotationVelocity * Time.deltaTime * rotationInput;
-		if (_avatarRotation < 0f) {
-			_avatarRotation += 360f;
-		}
-		else if (_avatarRotation >= 360f) {
-			_avatarRotation -= 360f;
-		}
+		_avatarRotation %= 360.0f;
 		_rotater.localRotation = Quaternion.Euler(_avatarRotation, 0f, 0f);
 
 		_ballRotation = (_ballRotation + _velocity) % 360.0f;
@@ -166,12 +164,7 @@ public class Player : MonoBehaviour {
 	private void SetupCurrentPipe () {
 		_deltaToRotation = 360f / (2f * Mathf.PI * _currentPipe.CurveRadius);
 		_worldRotation += _currentPipe.RelativeRotation;
-		if (_worldRotation < 0f) {
-			_worldRotation += 360f;
-		}
-		else if (_worldRotation >= 360f) {
-			_worldRotation -= 360f;
-		}
+		_worldRotation %= 360.0f;
 		_world.localRotation = Quaternion.Euler(_worldRotation, 0f, 0f);
 	}
 
@@ -187,6 +180,6 @@ public class Player : MonoBehaviour {
 
 	public void SetColor(Color color)
 	{
-		MyPipeSystem.SetColor(color);
+		PipeSystem.SetColor(color);
 	}
 }

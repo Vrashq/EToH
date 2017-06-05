@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class PipeSystem : MonoBehaviour 
+public class PipeSystem : PanzerNoob.Tools.GenericSingleton<PipeSystem> 
 {
 	public Pipe PipePrefab;
 	[Range(6,18)]
